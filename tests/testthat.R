@@ -1,4 +1,4 @@
 library(testthat)
-library(ADAPT)
+library(ADAPTME)
 
-test_check("ADAPT")
+test_check("ADAPTME")

@@ -1,9 +1,20 @@
 bibentry(
   bibtype  = "Article",
+  title    = "ADAPT-ME: Analysis of Microbiome Differential Abundance by Pooling Tobit Mixed-Effects Models",
+  author   = c(person("Lucas", "Batista"), person("Ajeet", "Kaushik")),
+  journal  = "Bioinformatics Advances",
+  year     = 2025,
+  header   = "To cite ADAPT-ME in publications, please use:",
+  note     = "DOI to be added upon acceptance"
+)
+
+bibentry(
+  bibtype  = "Article",
   title    = "ADAPT: Analysis of Microbiome Differential Abundance by Pooling Tobit Models",
-  author   = "Mukai Wang, Simon Fontaine, Hui Jiang, Gen Li",
+  author   = c(person("Mukai", "Wang"), person("Simon", "Fontaine"),
+               person("Hui", "Jiang"), person("Gen", "Li")),
   journal  = "bioRxiv",
   year     = 2024,
-  header   = "To cite ADAPT in publications, please use:",
-  doi      = "https://doi.org/10.1101/2024.05.14.594186"
+  header   = "To cite the original ADAPT method on which ADAPT-ME is based:",
+  doi      = "10.1101/2024.05.14.594186"
 )

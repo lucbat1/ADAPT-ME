@@ -5,7 +5,7 @@
 \alias{DAresult-class}
 \title{Differential abundance analysis result}
 \description{
-An S4 class to represent ADAPT analysis results
+An S4 class to represent ADAPT-ME analysis results
 }
 \details{
 The analysis result object contains the analysis name, reference taxa, DA taxa,

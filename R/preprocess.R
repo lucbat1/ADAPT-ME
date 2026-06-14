@@ -3,7 +3,7 @@
 
 #' @importFrom phyloseq filter_taxa prune_samples otu_table sample_data taxa_are_rows sample_sums
 #' @importFrom stats model.matrix
-preprocess <- function(input_data, cond.var, base.cond, adj.var, prev.filter, depth.filter){
+preprocess <- function(input_data, cond.var, base.cond, adj.var, subject.var, prev.filter, depth.filter){
   
   # check if input data type is phyloseq
   stopifnot("Input data isn't a phyloseq object!" = is(input_data, 'phyloseq'))
@@ -18,18 +18,25 @@ preprocess <- function(input_data, cond.var, base.cond, adj.var, prev.filter, de
   metadata <- data.frame(sample_data(subset_data))
   allcols <- colnames(metadata)
   stopifnot("The main variable name for conditions need to be a string." = 
-              is(cond.var, "character"))
+              is(cond.var, "character") && length(cond.var) == 1)
+  stopifnot("The subject variable name needs to be a string." =
+              is(subject.var, "character") && length(subject.var) == 1)
 
   stopifnot("The variables for adjustments should be either NULL or a vector of character strings." = 
               is(adj.var, "character") | is(adj.var, "NULL"))
 
-  selected_cols <- c(cond.var, adj.var)
+  if (subject.var == cond.var || subject.var %in% adj.var) {
+    stop("The subject variable cannot also be the condition or an adjustment variable!")
+  }
+
+  selected_cols <- unique(c(cond.var, adj.var, subject.var))
   if (!all(selected_cols %in% allcols)){
     unavailable_cols <- selected_cols[!selected_cols %in% allcols]
     stop(sprintf("Some columns are not available in the metadata! (%s)", 
                  paste(unavailable_cols, collapse=",")))
   }
-  subset_metadata <- metadata[, c(cond.var, adj.var), drop=FALSE]
+  subset_metadata <- metadata[, selected_cols, drop=FALSE]
+  
   # dichotomize categorical variables if selected, set up design matrix
   if (any(is.na(subset_metadata))){
     stop("No missing data allowed in the metadata!")
@@ -60,12 +67,21 @@ preprocess <- function(input_data, cond.var, base.cond, adj.var, prev.filter, de
     adjustments<- adjustments[, -1] # remove intercept
   }
   complete_design_matrix <- cbind(1, main_variable, adjustments)
+  colnames(complete_design_matrix)[1:2] <- c("(Intercept)", "condition")
+  subject <- factor(subset_metadata[, subject.var])
+  if (nlevels(subject) < 2) {
+    stop("The subject variable needs at least two unique subjects!")
+  }
+  if (!any(tabulate(subject) > 1)) {
+    stop("At least one subject must have repeated observations for longitudinal analysis!")
+  }
   
   # parse the count matrix and edit the count_ratio function
   count_table <- otu_table(subset_data)
   if (taxa_are_rows(subset_data)){
     count_table <- t(count_table)
   }
+  count_table <- as(count_table, "matrix")
   
   if (any(is.na(count_table))){
     stop("No missing data allowed in the count table!")
@@ -75,7 +91,7 @@ preprocess <- function(input_data, cond.var, base.cond, adj.var, prev.filter, de
               ncol(count_table), nrow(count_table)))
   
   output <- list(count_table=count_table, design_matrix=complete_design_matrix,
-                 DAAname = cond.var)
+                 DAAname = cond.var, subject=subject, clean_metadata = subset_metadata)
   
   return(output)
   

@@ -1,38 +1,37 @@
-Package: ADAPT
-Title: Analysis of Microbiome Differential Abundance by Pooling Tobit Models
-Version: 0.99.1
-Authors@R: 
-    c(person(given="Mukai", family="Wang", email="wangmk@umich.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-1413-1904")),
-      person(given="Simon", family="Fontaine", email="simfont@umich.edu", role = "ctb"),
-      person(given="Hui", family="Jiang", email="jianghui@umich.edu", role="ctb"),
-      person(given="Gen", family="Li", email="ligen@umich.edu", role=c("aut", "ctb")))
-Description: ADAPT carries out differential abundance analysis for microbiome metagenomics data in phyloseq format.
-  It has two innovations. One is to treat zero counts as left censored and use Tobit models for log count ratios.
-  The other is an innovative way to find non-differentially abundant taxa as reference, then use the reference taxa to 
-  find the differentially abundant ones.
+Package: ADAPTME
+Title: Analysis of Microbiome Differential Abundance by Pooling Tobit Models with Mixed Effects
+Version: 1.0.0
+Authors@R: c(
+    person(given="Lucas", family="Batista", email="lbatista4565@floridapoly.edu",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0004-3353-7573")),
+    person(given="Ajeet", family="Kaushik", email="akaushik@floridapoly.edu",
+           role = "aut"))
+Description: ADAPT-ME extends the ADAPT framework for longitudinal and repeated-measures
+  microbiome studies. It treats zero counts as left-censored observations and fits
+  mixed-effects Tobit models for log count ratios, incorporating subject-level random
+  intercepts via Gauss-Hermite quadrature to account for within-subject correlation.
+  Reference taxa are selected using a BUM-guided iterative procedure that incorporates
+  both median fold-change distance and within-subject stability, making the method
+  robust to compositional bias in paired and longitudinal designs.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Imports:
-    Rcpp (>= 1.0.8),
-    RcppArmadillo (>= 0.10.8),
-    RcppParallel (>= 5.1.5),
     phyloseq (>= 1.39.0),
     methods,
     stats,
     ggplot2 (>= 3.4.1),
     ggrepel (>= 0.9.1)
-Suggests: 
+Suggests:
     rmarkdown (>= 2.11),
     knitr (>= 1.37),
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    Maaslin2,
+    ANCOMBC,
+    ZINQL
+RoxygenNote: 8.0.0
 Config/testthat/edition: 3
-LinkingTo:
-    Rcpp,
-    RcppArmadillo,
-    RcppParallel
 biocViews: 
     DifferentialExpression, 
     Microbiome, 
@@ -45,3 +44,4 @@ Depends:
     R (>= 4.1.0)
 LazyData: false
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

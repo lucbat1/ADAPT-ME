@@ -16,7 +16,7 @@ no DA taxa.}
 A ggplot object of the volcano plot
 }
 \description{
-Volcano plot of ADAPT results
+Volcano plot of ADAPT-ME results
 }
 \details{
 The customized plot function for \code{DAresult} type object generates a volcano plot with
@@ -24,8 +24,10 @@ the differentially abundant taxa highlighted. The users can decide how many taxa
 the smallest p-values are labeled on the plot.
 }
 \examples{
-data(ecc_saliva)
-saliva_results <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", 
-       base.cond="Control", adj.var="Site")
-plot(saliva_results, n.label=10)
+\dontrun{
+longitudinal_results <- adapt(input_data=longitudinal_phyloseq,
+       cond.var="Timepoint", base.cond="baseline",
+       adj.var="Site", subject.var="SubjectID")
+plot(longitudinal_results, n.label=10)
+}
 }

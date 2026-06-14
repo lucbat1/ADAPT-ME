@@ -14,7 +14,7 @@ BUM_llk <- function(vec, pvals) {
 
 BUM_fit <- function(pvals, ...) {
   if (all(is.na(pvals))) {
-    stop("all p-values were NA; nothing to compuite")
+    stop("all p-values were NA; nothing to compute")
   }
   orig.pvals <- pvals
   if (any(is.na(pvals))) {
@@ -24,7 +24,12 @@ BUM_fit <- function(pvals, ...) {
     stop("all p-values must be between 0 and 1")
   }
   if(min(pvals)==0) {
-    min.nonzero <- min(pvals[pvals>0])
+    positive_pvals <- pvals[pvals>0]
+    if (length(positive_pvals) == 0) {
+      min.nonzero <- .Machine$double.xmin
+    } else {
+      min.nonzero <- min(positive_pvals)
+    }
     pvals[pvals==0] <- min.nonzero/2
   }
   fitted_values <- optim(c(1/2, 1/2), BUM_llk, ...,
@@ -39,5 +44,3 @@ BUM_fit <- function(pvals, ...) {
                  pvals=orig.pvals)
   return(output)
 }
-
-

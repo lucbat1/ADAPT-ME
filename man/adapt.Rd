@@ -2,13 +2,14 @@
 % Please edit documentation in R/ADAPT.R
 \name{adapt}
 \alias{adapt}
-\title{ADAPT}
+\title{ADAPT-ME: Longitudinal Microbiome Differential Abundance Analysis}
 \usage{
 adapt(
   input_data,
   cond.var,
   base.cond = NULL,
   adj.var = NULL,
+  subject.var,
   censor = 1,
   prev.filter = 0.05,
   depth.filter = 1000,
@@ -24,6 +25,8 @@ adapt(
 
 \item{adj.var}{the names of the variables to be adjusted, a vector of character strings}
 
+\item{subject.var}{the metadata variable identifying repeated measurements from the same subject}
+
 \item{censor}{the value to censor at for zero counts, default 1}
 
 \item{prev.filter}{taxa whose prevalences are smaller than the cutoff will be excluded from analysis, default 0.05}
@@ -36,34 +39,42 @@ adapt(
 a \code{DAresult} type object contains the input and the output. Use summary and plot to explore the output
 }
 \description{
-Analysis of microbiome differential abundance by pooling tobit models
+Runs the full ADAPT-ME pipeline: BUM-guided reference selection with
+within-subject stability scoring, followed by mixed-effects Tobit
+count-ratio tests with a subject random intercept.
 }
 \details{
-ADAPT takes in a metagenomics count table as a phyloseq object.
-The phyloseq object needs to have metadata containing
-at least one variable \code{cond.var} representing the conditions that the user is testing on.
-The condition variable \code{cond.var} can be numeric (as a continuous variable) or character (representing categorical variable).
-ADAPT does not support multigroup comparison yet. If there are multiple conditions,
-the user can specify the condition to single out through \code{base.cond}. ADAPT then carry out DAA between
-the selected \code{base.cond} and all the others. ADAPT allows adjusting for other covariates. The
-user can specify all the covariates to adjust for by specifying \code{adj.var} with a vector of variable names.
+ADAPT-ME takes in a longitudinal metagenomics count table as a phyloseq object.
+The phyloseq object must have metadata containing at least one condition variable
+(\code{cond.var}) and one subject identifier (\code{subject.var}) for repeated-measures data.
+The condition variable can be numeric (continuous) or character (categorical).
+ADAPT-ME does not support multigroup comparison. If there are multiple groups,
+specify the baseline through \code{base.cond}; ADAPT-ME then carries out DAA between
+\code{base.cond} and all others. Additional covariates can be adjusted for via \code{adj.var}.
 
-Differential abundance analysis may be too challenging for rare taxa and samples with too low sequencing depth.
-The users can filter out taxa whose prevalences are lower than \code{prev.filter} (default 0.05). The users
-can also filter out samples whose sequencing depths (library sizes) are smaller than \code{depth.filter} (default 1000).
+Zero counts are treated as left-censored observations. Mixed-effects Tobit models
+are fitted for log count ratios between each taxon and the summed reference counts,
+with a subject-level random intercept integrated out via 15-node Gauss-Hermite
+quadrature. This removes between-subject baseline variation from the residual,
+substantially improving power in paired and longitudinal designs.
 
-One major feature of ADAPT is treating zero counts as left censored observations and use Tobit models for log count ratios.
-The zero counts by default are left censored at one. The users can change the value to censor at through \code{censor}.
-Change the cutoff of BH-adjusted p-values with \code{alpha} (default 0.05) for calling DA taxa.
+Reference taxa are selected iteratively using a BUM p-value model. The reference
+score combines median fold-change distance with within-subject standard deviation,
+so that temporally unstable taxa are not mistaken for stable references.
 
-The returned value of \code{adapt} is a customized S4 type called \code{DAresult}. We have developed two helper functions \code{summary}
-and \code{plot} for this special data type.
+For cross-sectional data (no repeated measures), use \code{adapt_crosssectional()}
+instead, which fits fixed-effects Tobit models and does not require \code{subject.var}.
+
+Rare taxa and low-depth samples can be filtered with \code{prev.filter} and
+\code{depth.filter}. DA taxa are called at BH-adjusted p-value < \code{alpha} (default 0.05).
+
+The returned value is a \code{DAresult} S4 object. Use \code{summary()} and \code{plot()} to
+explore the output.
 }
 \examples{
-data(ecc_plaque)
-plaque_results <- adapt(input_data=ecc_plaque, cond.var="CaseStatus", 
-       base.cond="case")
-data(ecc_saliva)
-saliva_results <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", 
-       base.cond="Control", adj.var="Site")
+\dontrun{
+longitudinal_results <- adapt(input_data=longitudinal_phyloseq,
+       cond.var="Timepoint", base.cond="baseline",
+       adj.var="Site", subject.var="SubjectID")
+}
 }

@@ -1,9 +1,9 @@
-# class and methods for ADAPT result
+# class and methods for ADAPT-ME result
 
 #' Differential abundance analysis result
 #' 
 #' @description
-#' An S4 class to represent ADAPT analysis results
+#' An S4 class to represent ADAPT-ME analysis results
 #' 
 #' @details
 #' The analysis result object contains the analysis name, reference taxa, DA taxa,
@@ -74,10 +74,12 @@ setMethod("show", "DAresult", function(object){
 #' @export
 #' @importFrom phyloseq nsamples tax_table
 #' @examples
-#' data(ecc_saliva)
-#' saliva_results <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", 
-#'        base.cond="Control", adj.var="Site")
-#' summary(saliva_results, select="da")
+#' \dontrun{
+#' longitudinal_results <- adapt(input_data=longitudinal_phyloseq,
+#'        cond.var="Timepoint", base.cond="baseline",
+#'        adj.var="Site", subject.var="SubjectID")
+#' summary(longitudinal_results, select="da")
+#' }
 setMethod("summary", "DAresult", function(object, select=c("all", "da", "ref")){
   
   select <- match.arg(select)
@@ -136,7 +138,7 @@ setMethod("summary", "DAresult", function(object, select=c("all", "da", "ref")){
 #' Plotting differential abundance analysis results
 #' 
 #' @description
-#' Volcano plot of ADAPT results
+#' Volcano plot of ADAPT-ME results
 #' 
 #' @details
 #' The customized plot function for `DAresult` type object generates a volcano plot with
@@ -152,10 +154,12 @@ setMethod("summary", "DAresult", function(object, select=c("all", "da", "ref")){
 #' @importFrom ggrepel geom_label_repel
 #' @export
 #' @examples
-#' data(ecc_saliva)
-#' saliva_results <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", 
-#'        base.cond="Control", adj.var="Site")
-#' plot(saliva_results, n.label=10)
+#' \dontrun{
+#' longitudinal_results <- adapt(input_data=longitudinal_phyloseq,
+#'        cond.var="Timepoint", base.cond="baseline",
+#'        adj.var="Site", subject.var="SubjectID")
+#' plot(longitudinal_results, n.label=10)
+#' }
 setMethod("plot", "DAresult", function(x, n.label=5){
   
   n.label <- as.integer(n.label)
@@ -210,6 +214,5 @@ setMethod("plot", "DAresult", function(x, n.label=5){
   return(generated_plot)
   
 })
-
 
 

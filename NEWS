@@ -1,6 +1,22 @@
-version 0.99.0: (2024-04-13)
-        + Package ready to submit to bioconductor.
-version 0.99.1: (2024-08-21)
+version 1.0.0: ADAPT-ME (2025)
+        + Rebranded as ADAPT-ME: Analysis of Microbiome Differential Abundance
+          by Pooling Tobit Models with Mixed Effects
+        + Added subject random intercept via Gauss-Hermite quadrature (15 nodes)
+          to account for within-subject correlation in longitudinal designs
+        + Extended reference selection score with within-subject stability term
+          to prevent stable high-variance taxa from being excluded as references
+        + Added adapt_crosssectional() as an isolated cross-sectional ablation
+          baseline (fixed-effects Tobit, no random intercept, no subject.var)
+        + Added full simulation validation harness: adaptme_validation_scenarios(),
+          adaptme_stress_scenarios(), run_adaptme_simulation_validation(),
+          summarize_adaptme_validation(), compare_adaptme_vs_naive()
+        + Added simulate_adaptme_phyloseq() for controlled longitudinal simulation
+        + Validated on iHMP HMP2 16S stool data (EH1037, 42 subjects x 2 visits)
+
+version 0.99.1: (2024-08-21) [original ADAPT]
         + Add Bioconductor installation instructions
         + Modify a bug that caters to scenarios when the reference taxa counts are zero (extremely rare)
         + Add input argument checks
+
+version 0.99.0: (2024-04-13) [original ADAPT]
+        + Package ready to submit to bioconductor.

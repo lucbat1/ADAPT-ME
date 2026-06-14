@@ -1,8 +1,8 @@
 ---
-title: "ADAPT Tutorial"
+title: "ADAPT-ME Tutorial"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ADAPT Tutorial}
+  %\VignetteIndexEntry{ADAPT-ME Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: references.bib
@@ -16,79 +16,129 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 # Introduction
 
-This is the tutorial for `ADAPT` (analysis of microbiome differential abundance analysis by pooling Tobit models). Differential abundance analysis (DAA) is one of the fundamental steps in microbiome research [@LiReview]. The metagenomics count data have excessive zeros and are compositional, causing challenges for detecting microbiome taxa whose abundances are associated with different conditions. `ADAPT` overcomes these challenges differently from other DAA methods. First, `ADAPT` treats zero counts as left censored observations and apply Tobit models which are censored regressions [@tobit] for modeling the log count ratios. Second, `ADAPT` has an innovative and theoretically justified way of finding non-differentially abundant taxa as reference taxa. It then applies Tobit models to log count ratios between individual taxa and the summed counts of reference taxa to identify differentially abundant taxa. The overall workflow is presented in the graph below.
+This is the tutorial for `ADAPT-ME` (Analysis of Microbiome Differential Abundance by Pooling Tobit Models with Mixed Effects). Differential abundance analysis (DAA) is one of the fundamental steps in microbiome research [@LiReview]. The metagenomics count data have excessive zeros and are compositional, causing challenges for detecting microbiome taxa whose abundances are associated with different conditions.
 
-```{r echo=FALSE, out.width='70%', fig.align = "center", fig.cap="Workflow of ADAPT"}
+`ADAPT-ME` extends the original `ADAPT` framework [@ADAPT] to longitudinal and repeated-measures designs by incorporating a subject-level random intercept. It overcomes the key challenges of microbiome DAA as follows:
+
+* `ADAPT-ME` treats zero counts as left-censored observations and applies mixed-effects Tobit models [@tobit] for log count ratios, with subject random intercepts integrated out via Gauss-Hermite quadrature.
+* `ADAPT-ME` selects non-differentially abundant taxa as reference taxa using a BUM-guided [@BUM] iterative procedure that accounts for both fold-change distance and within-subject stability.
+* For cross-sectional data (no repeated measures), `ADAPT-ME` provides `adapt_crosssectional()`, which applies the same Tobit count-ratio framework without requiring a subject identifier.
+
+The overall workflow is presented in the figure below.
+
+```{r echo=FALSE, out.width='70%', fig.align = "center", fig.cap="Workflow of ADAPT-ME"}
 knitr::include_graphics('./flowchart.png')
 ```
 
-There are two ways to install the package, either through GitHub or Bioconductor.
+Install the package from GitHub:
 
 ```{r, eval=FALSE}
-# install through GitHub
-if(!require("ADAPT")) BiocManager::install("mkbwang/ADAPT", build_vignettes = TRUE)
+if (!require("devtools", quietly = TRUE))
+    install.packages("devtools")
 
-# install through Bioconductor
-if(!require("ADAPT")) BiocManager::install("ADAPT", version="devel", 
-                                           build_vignettes = TRUE)
-
+devtools::install_github("lucbat1/ADAPT-ME", build_vignettes = TRUE)
 ```
 
-# Main function `adapt`
+```{r load}
+library(ADAPTME)
+```
 
-The main function `adapt` takes in a phyloseq [@phyloseq] object that needs to have at least a count table and a sample metadata. The metadata must contain one variable that represents the condition to test on. We currently allow binary and continuous conditions. If there are more than two groups for the condition variable, the user may single out one group to compare with all the others for DAA. `ADAPT` allows adjusting for extra covariates. There are eight arguments in the `adapt` function: 
+---
 
-1. `input_data` is the phyloseq object with the count matrix and metadata. This argument is required.
-2. `cond.var` is the variable in the metadata that represents the condition to test on. This argument is required.
-3. `base.cond` is the group that the user is interested in comparing against other groups. This argument is only needed if the condition is categorical.
-4. `adj.var` contains the covariates to adjust for. It can be empty or be a vector of variable names.
-5. `censor` is the value to censor at for all the zero counts. By default the zeros are censored at one.
-6. `prev.filter` is the threshold for filtering out rare taxa. By default taxa with prevalence lower than 0.05 are filtered out before analysis.
-7. `depth.filter` is the threshold for filtering out samples with low sequencing depths. The default threshold is 1000 reads.
-8. `alpha` is the cutoff for the Benjamini-hochberg adjusted p-values to decide differentially abundant taxa. The default is 0.05.
+# Cross-sectional usage: `adapt_crosssectional()`
 
-The `ADAPT` package contains two metagenomics datasets from an early childhood dental caries study [@ECCpaper1]. One corresponds to 16S rRNA sequencing of 161 saliva samples collected from 12-month-old infants (`ecc_saliva`). The other corresponds to shotgun metagenomic sequencing of 30 plaque samples collected from kids between 36 and 60 months old (`ecc_plaque`). In this vignette let's use the saliva data to find out differentially abundant taxa between kids who developed early childhood caries (ECC) after 36 months old and those who didn't. Besides the main variable `CaseStatus`, there is another variable `Site` representing the site where each sample was collected. Both variables are discrete and contain two categories each.  
+For studies without repeated measures from the same subject, use `adapt_crosssectional()`.
+It applies the same BUM-guided reference selection and Tobit count-ratio tests as `adapt()`,
+but fits fixed-effects models only and does not require a `subject.var`.
 
-```{r load data}
-library(ADAPT)
+The `ADAPT-ME` package includes two metagenomics datasets from an early childhood dental
+caries study [@ECCpaper1]. `ecc_saliva` contains 16S rRNA sequencing of 161 saliva samples
+from 12-month-old infants. We use it here to demonstrate cross-sectional differential
+abundance analysis between children who developed early childhood caries (ECC) and those
+who did not.
+
+```{r load_data}
 data(ecc_saliva)
 ```
 
-We can run `adapt` with or without covariate adjustment. The returned object is a customized S4-type object with slots corresponding to analysis name, reference taxa, differentially abundant taxa, detailed analysis results (a dataframe) and input phyloseq object.
+Run `adapt_crosssectional()` with and without covariate adjustment:
 
-
-```{r adapt}
-saliva_output_noadjust <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", base.cond="Control")
-saliva_output_adjust <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", base.cond="Control", adj.var="Site")
+```{r cs_noadjust}
+saliva_cs <- adapt_crosssectional(
+  input_data  = ecc_saliva,
+  cond.var    = "CaseStatus",
+  base.cond   = "Control"
+)
 ```
 
-
-The `Site` is not a confounding variable, therefore the DAA results only differ by one taxon. 
-
-# Explore Analysis Results
-
-We have developed two utility functions for result exploration. `summary` returns a dataframe with the estimated log10 abundance fold changes, hypothesis test p-values and taxonomy (if provided in the phyloseq object). The user can choose to return results of all the taxa, the differentially abundant taxa only or the reference taxa only through the `select` variable ("all", "da" or "ref"). We choose to return the results of only the DA taxa below.
-
-```{r getsummary}
-DAtaxa_result <- summary(saliva_output_noadjust, select="da")
+```{r cs_adjust}
+saliva_cs_adj <- adapt_crosssectional(
+  input_data  = ecc_saliva,
+  cond.var    = "CaseStatus",
+  base.cond   = "Control",
+  adj.var     = "Site"
+)
 ```
 
-```{r printtable}
+---
+
+# Longitudinal usage: `adapt()`
+
+For longitudinal or paired studies, use `adapt()`. It requires a `subject.var` identifying
+repeated observations from the same individual. The subject random intercept is integrated
+out via 15-node Gauss-Hermite quadrature, removing between-subject baseline variation and
+improving power in paired designs.
+
+```{r longitudinal, eval=FALSE}
+# Example with a longitudinal phyloseq object
+longitudinal_results <- adapt(
+  input_data   = longitudinal_phyloseq,
+  cond.var     = "Timepoint",
+  base.cond    = "baseline",
+  adj.var      = "Sex",
+  subject.var  = "SubjectID",
+  prev.filter  = 0.10,
+  depth.filter = 1000,
+  alpha        = 0.05
+)
+```
+
+The `subject.var` must correspond to a column in the phyloseq sample metadata that
+contains one stable identifier per person, repeated across their samples.
+
+---
+
+# Exploring Results
+
+Both `adapt()` and `adapt_crosssectional()` return a `DAresult` S4 object.
+Two helper functions are provided for result exploration.
+
+## Summary table
+
+`summary()` returns a data frame with fold changes, p-values, and taxonomy (if available).
+Use the `select` argument to return results for all taxa (`"all"`), DA taxa only (`"da"`),
+or reference taxa only (`"ref"`).
+
+```{r summary}
+DAtaxa_result <- summary(saliva_cs, select = "da")
 head(DAtaxa_result)
 ```
 
+## Volcano plot
 
-We have also developed a `plot` function to generate a volcano plot. The DA taxa are highlighted in red. The user can decide how many points with the smallest p-values are labeled (default 5) with `n.label` argument.
+`plot()` generates a volcano plot with DA taxa highlighted in red. Control the number
+of labeled points with `n.label` (default 5).
 
-
-```{r volcano, fig.width=5, fig.height=3, fig.align = "center", fig.cap="Volcano plot for differential abundance analysis between saliva samples of children who developed early childhood dental caries and those who didn't"}
-plot(saliva_output_noadjust, n.label=5)
+```{r volcano, fig.width=5, fig.height=3, fig.align="center", fig.cap="Volcano plot for differential abundance analysis between ECC and control saliva samples"}
+plot(saliva_cs, n.label = 5)
 ```
 
+---
+
 # Session Information and References
+
 ```{r sessioninfo}
 sessionInfo()
 ```

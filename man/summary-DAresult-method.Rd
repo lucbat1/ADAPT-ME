@@ -26,8 +26,10 @@ user can choose to only get the detailed analysis result of DA taxa or the refer
 through the \code{select} parameter.
 }
 \examples{
-data(ecc_saliva)
-saliva_results <- adapt(input_data=ecc_saliva, cond.var="CaseStatus", 
-       base.cond="Control", adj.var="Site")
-summary(saliva_results, select="da")
+\dontrun{
+longitudinal_results <- adapt(input_data=longitudinal_phyloseq,
+       cond.var="Timepoint", base.cond="baseline",
+       adj.var="Site", subject.var="SubjectID")
+summary(longitudinal_results, select="da")
+}
 }
