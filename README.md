@@ -91,7 +91,7 @@ demonstrating the critical contribution of the subject random intercept in paire
 
 If you use ADAPT-ME, please cite:
 
-> Batista, L. and Kaushik, A. (2025). ADAPT-ME: Analysis of Microbiome Differential Abundance by Pooling Tobit Mixed-Effects Models. *Bioinformatics Advances*. doi: to be added upon acceptance.
+[Will update citation upon journal acceptance]
 
 And the original ADAPT method:
 
