@@ -20,3 +20,5 @@
 *.Rproj
 experiment/
 .Rbuildignore
+.DS_Store
+*.Rcheck/

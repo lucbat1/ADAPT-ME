@@ -72,7 +72,7 @@ p_fpr <- ggplot(null_fpr, aes(x = method_label, y = fpr_pct, fill = method_label
   scale_fill_manual(values = method_colors, guide = "none") +
   scale_y_continuous(limits = c(0, max(null_fpr$fpr_pct) * 1.25 + 0.5),
                      expand  = c(0, 0)) +
-  labs(title = "A.  Type I Error (Null, n = 20)",
+  labs(title = "Per-Taxon Type I Error Rate (Null Scenario, n = 20)",
        x = NULL, y = "Per-taxon FPR (%)") +
   theme_bw(base_size = 10) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1, size = 9),
@@ -89,7 +89,7 @@ p_fdr20 <- ggplot(df20, aes(x = scenario_label, y = fdr_pct, fill = method_label
              na.rm = TRUE) +
   scale_fill_manual(values = method_colors, name = NULL) +
   scale_y_continuous(limits = c(0, 70), expand = c(0, 0)) +
-  labs(title = "B.  FDR - Signal Scenarios (n = 20)",
+  labs(title = "A.  FDR, Signal Scenarios (n = 20)",
        x = NULL, y = "FDR (%)") +
   theme_bw(base_size = 10) +
   theme(legend.position  = "bottom",
@@ -102,7 +102,7 @@ p_power20 <- ggplot(df20, aes(x = scenario_label, y = power_pct, fill = method_l
   geom_col(position = position_dodge(0.8), width = 0.75) +
   scale_fill_manual(values = method_colors, name = NULL) +
   scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
-  labs(title = "C.  Power - Signal Scenarios (n = 20)",
+  labs(title = "A.  Power, Signal Scenarios (n = 20)",
        x = NULL, y = "Power (%)") +
   theme_bw(base_size = 10) +
   theme(legend.position = "none",
@@ -120,7 +120,7 @@ p_fdr50 <- ggplot(df50, aes(x = scenario_label, y = fdr_pct, fill = method_label
              na.rm = TRUE) +
   scale_fill_manual(values = method_colors, name = NULL) +
   scale_y_continuous(limits = c(0, 70), expand = c(0, 0)) +
-  labs(title = "D.  FDR - Signal Scenarios (n = 50)",
+  labs(title = "B.  FDR, Signal Scenarios (n = 50)",
        x = NULL, y = "FDR (%)") +
   theme_bw(base_size = 10) +
   theme(legend.position = "none",
@@ -132,30 +132,35 @@ p_power50 <- ggplot(df50, aes(x = scenario_label, y = power_pct, fill = method_l
   geom_col(position = position_dodge(0.8), width = 0.75) +
   scale_fill_manual(values = method_colors, name = NULL) +
   scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
-  labs(title = "E.  Power - Signal Scenarios (n = 50)",
+  labs(title = "B.  Power, Signal Scenarios (n = 50)",
        x = NULL, y = "Power (%)") +
   theme_bw(base_size = 10) +
   theme(legend.position = "none",
         axis.text.x     = element_text(size = 9),
         plot.title      = element_text(size = 10, face = "bold"))
 
-# ── Assemble layout ───────────────────────────────────────────────────────────
-# Row 1: A (narrow) + B (wide) + C (wide)
-# Row 2: spacer    + D (wide) + E (wide)
-layout <- "
-AABBCC
-##DDEE
-"
+# ── Figure: Null FPR (standalone) ────────────────────────────────────────────
+ggsave(file.path(output_dir, "fig-null-fpr.pdf"),
+       p_fpr, width = 6, height = 4, device = "pdf")
+ggsave(file.path(output_dir, "fig-null-fpr.png"),
+       p_fpr, width = 6, height = 4, dpi = 300, device = "png")
 
-fig <- p_fpr + p_fdr20 + p_power20 + p_fdr50 + p_power50 +
-  plot_layout(design = layout, guides = "collect") &
+# ── Figure: FDR (n=20 | n=50) ────────────────────────────────────────────────
+fig_fdr <- (p_fdr20 | p_fdr50) +
+  plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
+ggsave(file.path(output_dir, "fig-fdr.pdf"),
+       fig_fdr, width = 13, height = 5, device = "pdf")
+ggsave(file.path(output_dir, "fig-fdr.png"),
+       fig_fdr, width = 13, height = 5, dpi = 300, device = "png")
 
-# ── Save ──────────────────────────────────────────────────────────────────────
-pdf_path <- file.path(output_dir, "benchmark-panel.pdf")
-png_path <- file.path(output_dir, "benchmark-panel.png")
+# ── Figure: Power (n=20 | n=50) ──────────────────────────────────────────────
+fig_power <- (p_power20 | p_power50) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+ggsave(file.path(output_dir, "fig-power.pdf"),
+       fig_power, width = 13, height = 5, device = "pdf")
+ggsave(file.path(output_dir, "fig-power.png"),
+       fig_power, width = 13, height = 5, dpi = 300, device = "png")
 
-ggsave(pdf_path, fig, width = 14, height = 8, device = "pdf")
-ggsave(png_path, fig, width = 14, height = 8, dpi = 300, device = "png")
-
-cat(sprintf("Benchmark figure saved:\n  %s\n  %s\n", pdf_path, png_path))
+cat("Figures saved to", output_dir, "\n")

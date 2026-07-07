@@ -110,23 +110,25 @@ make_volcano <- function(df, panel_label, x_lab) {
 
 p_me <- make_volcano(
   me_ann,
-  panel_label = sprintf("A.  ADAPT-ME (Mixed-Effects): %d DA taxa", n_me_da),
+  panel_label = sprintf("ADAPT-ME: Mixed-Effects Tobit (%d DA taxa)", n_me_da),
   x_lab       = expression("Log"[10] ~ "Fold Change (Visit 2 vs Visit 1)")
 )
 
 p_cs <- make_volcano(
   cs_ann,
-  panel_label = sprintf("B.  ADAPT-CS (Cross-Sectional Ablation): %d DA taxa", n_cs_da),
+  panel_label = sprintf("Cross-Sectional Ablation (%d DA taxa)", n_cs_da),
   x_lab       = expression("Log"[10] ~ "Fold Change (Visit 2 vs Visit 1)")
 )
 
-# ── Combine and save ──────────────────────────────────────────────────────────
-fig <- p_me | p_cs
+# ── Save figures separately ───────────────────────────────────────────────────
+ggsave(file.path(output_dir, "fig-hmp-adaptme.pdf"),
+       p_me, width = 6, height = 5, device = "pdf")
+ggsave(file.path(output_dir, "fig-hmp-adaptme.png"),
+       p_me, width = 6, height = 5, dpi = 300, device = "png")
 
-pdf_path <- file.path(output_dir, "hmp2-volcano-comparison.pdf")
-png_path <- file.path(output_dir, "hmp2-volcano-comparison.png")
+ggsave(file.path(output_dir, "fig-hmp-ablation.pdf"),
+       p_cs, width = 6, height = 5, device = "pdf")
+ggsave(file.path(output_dir, "fig-hmp-ablation.png"),
+       p_cs, width = 6, height = 5, dpi = 300, device = "png")
 
-ggsave(pdf_path, fig, width = 12, height = 5, device = "pdf")
-ggsave(png_path, fig, width = 12, height = 5, dpi = 300, device = "png")
-
-cat(sprintf("HMP2 volcano figure saved:\n  %s\n  %s\n", pdf_path, png_path))
+cat(sprintf("HMP figures saved to %s\n", output_dir))
