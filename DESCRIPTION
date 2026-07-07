@@ -6,7 +6,8 @@ Authors@R: c(
            role = c("aut", "cre"),
            comment = c(ORCID = "0009-0004-3353-7573")),
     person(given="Ajeet", family="Kaushik", email="akaushik@floridapoly.edu",
-           role = "aut"))
+           role = "aut",
+           comment = c(ORCID = "0000-0003-4206-1541")))
 Description: ADAPT-ME extends the ADAPT framework for longitudinal and repeated-measures
   microbiome studies. It treats zero counts as left-censored observations and fits
   mixed-effects Tobit models for log count ratios, incorporating subject-level random
