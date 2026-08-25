@@ -137,6 +137,7 @@ count_ratio <- function(count_table, design_matrix, subject, reftaxa=NULL, censo
                           pval=NA_real_,
                           within_subject_sd=NA_real_,
                           stringsAsFactors = FALSE)
+  rownames(CR_result) <- TBDtaxa
 
   n_taxa <- ncol(TBD_counts)
   condition_col <- match("condition", colnames(subset_designmatrix))

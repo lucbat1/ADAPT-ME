@@ -80,6 +80,7 @@ count_ratio_cs <- function(count_table, design_matrix,
     within_subject_sd = NA_real_,   # NA for CS; kept for DAresult compatibility
     stringsAsFactors = FALSE
   )
+  rownames(CR_result) <- TBDtaxa
 
   condition_col <- match("condition", colnames(subset_dm))
   if (is.na(condition_col))
