@@ -89,9 +89,7 @@ demonstrating the critical contribution of the subject random intercept in paire
 
 ## Citation
 
-If you use ADAPT-ME, please cite:
-
-[Will update citation upon journal acceptance]
+If you use ADAPT-ME, please cite this repo
 
 And the original ADAPT method:
 
